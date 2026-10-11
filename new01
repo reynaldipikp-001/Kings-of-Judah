@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Judahite Kings Quest - Bible History for Kids</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 30%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+        .font-kids {
+            font-family: 'Fredoka One', cursive, sans-serif;
+        }
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .floating {
+            animation: bounce-slow 3s ease-in-out infinite;
+        }
+        .king-card {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .king-card:hover {
+            transform: translateY(-6px) scale(1.02);
+        }
+        /* Custom scrollbar for king timeline list */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen selection:bg-amber-300">
+
+    <header class="bg-amber-400 border-b-4 border-amber-500 shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.showHome()">
+                <div class="bg-white p-2 rounded-2xl shadow-inner text-2xl border-2 border-amber-300">👑</div>
+                <div>
+                    <h1 class="font-kids text-xl sm:text-2xl text-amber-950 tracking-wide">Judahite Kings Quest</h1>
+                    <p class="text-xs text-amber-800 font-bold hidden sm:block">Learn Bible History & Collect Crowns!</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 sm:gap-4">
+                <!-- Crown Badges Earned -->
+                <div class="flex items-center space-x-2 bg-white/90 px-3 py-1.5 rounded-full border-2 border-amber-300 shadow-sm">
+                    <span class="text-xl">🏆</span>
+                    <span class="font-kids text-amber-700 text-sm sm:text-base" id="crown-display">0 Crowns</span>
+                </div>
+                <!-- Stars Score -->
+                <div class="flex items-center space-x-2 bg-indigo-900 text-amber-300 px-3 py-1.5 rounded-full border-2 border-indigo-700 shadow-sm font-kids text-sm sm:text-base">
+                    <span>⭐</span>
+                    <span id="stars-display">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl w-full mx-auto p-4 sm:p-6 flex-grow flex flex-col">
+
+        <!-- HOME / TIMELINE VIEW -->
+        <div id="view-home" class="space-y-6">
+            
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border-4 border-white">
+                <div class="relative z-10 max-w-xl">
+                    <span class="bg-white/20 text-amber-100 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">Old Testament History • Kingdom of Judah</span>
+                    <h2 class="font-kids text-3xl sm:text-4xl mb-2 drop-shadow-md">Meet the Kings of Judah!</h2>
+                    <p class="text-amber-100 text-base sm:text-lg mb-6 leading-relaxed font-medium">
+                        Did they obey God or make bad choices? Explore their exciting stories, play interactive sounds, and test your knowledge with fun quizzes!
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="app.openRandomKing()" class="bg-white hover:bg-amber-50 text-amber-900 font-kids px-5 py-3 rounded-2xl shadow-lg border-b-4 border-amber-300 active:translate-y-1 transition-all text-base flex items-center space-x-2">
+                            <span>🎲</span><span>Random King Story!</span>
+                        </button>
+                        <button onclick="app.scrollToTimeline()" class="bg-amber-900 hover:bg-amber-950 text-amber-200 font-kids px-5 py-3 rounded-2xl shadow-lg border-b-4 border-amber-950 active:translate-y-1 transition-all text-base flex items-center space-x-2">
+                            <span>📜</span><span>Explore Timeline</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="absolute -right-6 -bottom-8 text-9xl opacity-20 select-none pointer-events-none floating">🏰</div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="bg-white rounded-3xl p-4 sm:p-6 shadow-md border-2 border-amber-100">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <h3 class="font-kids text-xl text-amber-950 flex items-center gap-2">
+                        <span>🔍</span> <span>Filter Kings by Godly Obedience:</span>
+                    </h3>
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                        <button onclick="app.setFilter('all')" id="filter-all" class="flex-1 sm:flex-none px-4 py-2 rounded-xl font-kids text-sm transition-all border-2 bg-amber-500 text-white border-amber-600 shadow">
+                            All Kings (8)
+                        </button>
+                        <button onclick="app.setFilter('good')" id="filter-good" class="flex-1 sm:flex-none px-4 py-2 rounded-xl font-kids text-sm transition-all border-2 bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100">
+                            😇 Obeyed God
+                        </button>
+                        <button onclick="app.setFilter('bad')" id="filter-bad" class="flex-1 sm:flex-none px-4 py-2 rounded-xl font-kids text-sm transition-all border-2 bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100">
+                            😠 Disobeyed God
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kings Timeline Grid -->
+            <div>
+                <h3 id="timeline-anchor" class="font-kids text-2xl text-slate-800 mb-4 flex items-center gap-2">
+                    <span>👑</span> <span>Chronological Timeline of Kings</span>
+                </h3>
+                <div id="kings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Trophy / Crown Collection Section -->
+            <div class="bg-white rounded-3xl p-6 shadow-lg border-4 border-amber-200 mt-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                    <div>
+                        <h3 class="font-kids text-2xl text-amber-950 flex items-center gap-2">
+                            <span>🏆</span> <span>Your Royal Crown Gallery</span>
+                        </h3>
+                        <p class="text-sm text-slate-500 font-medium">Pass each king's quiz to unlock his golden crown badge!</p>
+                    </div>
+                    <span id="gallery-count" class="bg-amber-100 text-amber-800 font-kids px-4 py-1.5 rounded-full text-sm border border-amber-300">
+                        0 / 8 Kings Mastered
+                    </span>
+                </div>
+
+                <div id="badge-grid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                    <!-- Badges populated dynamically -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- KING STORY VIEW -->
+        <div id="view-story" class="hidden space-y-6">
+            
+            <!-- Navigation Back Header -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <button onclick="app.showHome()" class="bg-white hover:bg-slate-100 text-slate-700 font-kids px-5 py-2.5 rounded-2xl shadow border-2 border-slate-200 flex items-center gap-2 transition-all active:translate-y-0.5">
+                    <span>⬅️</span> <span>Back to Kings Gallery</span>
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <button id="tts-btn" onclick="app.toggleSpeech()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-kids px-4 py-2.5 rounded-2xl shadow border-b-4 border-indigo-800 flex items-center gap-2 transition-all active:translate-y-0.5">
+                        <span>🔊</span> <span id="tts-label">Read Story Aloud</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- King Detail Paper Card -->
+            <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-xl border-4 border-amber-200 relative overflow-hidden">
+                
+                <!-- Badge and Obedience Indicator Banner -->
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <span id="king-chronology" class="bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-wider px-3 py-1 rounded-full border">
+                            1st King of Judah
+                        </span>
+                        <span id="king-scripture" class="text-xs font-extrabold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                            1 Kings 14
+                        </span>
+                    </div>
+
+                    <div id="king-obedience-tag" class="flex items-center gap-2 font-kids text-sm px-4 py-1.5 rounded-full border shadow-sm">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- King Name Title -->
+                <div class="text-center sm:text-left mb-6">
+                    <h2 id="king-title" class="font-kids text-3xl sm:text-5xl text-amber-950 mb-1"></h2>
+                    <p id="king-meaning" class="text-slate-500 italic text-base font-medium"></p>
+                </div>
+
+                <!-- Custom SVG Visual Banner -->
+                <div id="king-illustration" class="w-full h-56 sm:h-64 bg-gradient-to-b from-amber-50 via-sky-50 to-amber-100 rounded-2xl flex items-center justify-center mb-8 border-2 border-amber-200 shadow-inner relative overflow-hidden">
+                    <!-- Inserted via JS -->
+                </div>
+
+                <!-- Easy Key Lessons Summary Card for Kids -->
+                <div class="bg-amber-50/80 rounded-2xl p-5 mb-8 border-2 border-amber-200 shadow-sm">
+                    <h4 class="font-kids text-amber-900 text-lg mb-2 flex items-center gap-2">
+                        <span>💡</span> <span>Quick Summary for Kids:</span>
+                    </h4>
+                    <ul id="king-summary-list" class="list-disc list-inside space-y-1 text-slate-700 font-semibold text-base sm:text-lg">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+
+                <!-- Main Story Paragraphs -->
+                <div id="king-body" class="text-lg sm:text-xl text-slate-700 space-y-5 leading-relaxed font-medium">
+                    <!-- Inserted via JS -->
+                </div>
+
+                <!-- Interactive Sound Trigger -->
+                <div class="mt-8 pt-6 border-t-2 border-slate-100 flex items-center justify-between flex-wrap gap-4 bg-slate-50 p-4 rounded-2xl">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🎺</span>
+                        <div>
+                            <h5 class="font-kids text-slate-800 text-base">Sound Effect Challenge</h5>
+                            <p class="text-xs text-slate-500 font-bold">Listen to the royal event chime for this king!</p>
+                        </div>
+                    </div>
+                    <button id="sfx-trigger-btn" onclick="app.playKingSound()" class="bg-amber-400 hover:bg-amber-300 text-amber-950 font-kids px-5 py-2.5 rounded-2xl shadow border-b-4 border-amber-600 flex items-center gap-2 transition-all active:translate-y-0.5">
+                        <span>🎵</span> <span id="sfx-btn-label">Play Royal Chime</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interactive Quiz Section -->
+            <div id="quiz-container" class="bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 rounded-3xl p-6 sm:p-8 shadow-2xl border-4 border-indigo-400 text-white">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <h3 class="font-kids text-2xl text-amber-300 flex items-center gap-2">
+                        <span>🧠</span> <span>King's Knowledge Quiz</span>
+                    </h3>
+                    <span class="bg-amber-400 text-amber-950 text-xs font-kids px-3 py-1.5 rounded-full uppercase shadow">
+                        Earn +10 Stars & Golden Crown
+                    </span>
+                </div>
+                
+                <p id="quiz-question" class="text-lg sm:text-2xl font-bold text-indigo-100 mb-6 leading-snug"></p>
+
+                <div id="quiz-options" class="grid grid-cols-1 gap-3">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div id="quiz-feedback" class="mt-6 hidden p-4 rounded-2xl text-center font-kids text-lg border-2"></div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto bg-amber-950 text-amber-200 py-6 text-center text-sm border-t-4 border-amber-800">
+        <div class="max-w-5xl mx-auto px-4 space-y-2">
+            <p class="font-kids text-base text-amber-400">Judahite Kings Quest • Interactive Bible History App for Kids</p>
+            <p class="text-xs text-amber-300/80">Designed with simple vocabularies for ages 8–12 • Learn who obeyed God and kept His commandments.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Web Audio API Synthesizer (Zero external sound file dependencies)
+        const SoundFX = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            playTone(freq, type, duration, delay = 0, gainVal = 0.15) {
+                try {
+                    this.init();
+                    setTimeout(() => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                        
+                        gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                        
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        
+                        osc.start();
+                        osc.stop(this.ctx.currentTime + duration);
+                    }, delay);
+                } catch(e) {
+                    console.warn("Audio Context blocked or unsupported.", e);
+                }
+            },
+            click() {
+                this.playTone(587.33, 'sine', 0.08); // D5
+            },
+            correct() {
+                // Happy victorious fan-fare chime
+                this.playTone(523.25, 'triangle', 0.15, 0);   // C5
+                this.playTone(659.25, 'triangle', 0.15, 100); // E5
+                this.playTone(783.99, 'triangle', 0.15, 200); // G5
+                this.playTone(1046.50, 'triangle', 0.4, 300); // C6
+            },
+            wrong() {
+                // Gentle disappointment tone
+                this.playTone(220, 'sawtooth', 0.25, 0, 0.1);
+                this.playTone(174.61, 'sawtooth', 0.35, 150, 0.1);
+            },
+            royalTrumpet() {
+                // Royal fanfare
+                this.playTone(392.00, 'triangle', 0.15, 0);   // G4
+                this.playTone(523.25, 'triangle', 0.15, 150); // C5
+                this.playTone(659.25, 'triangle', 0.15, 300); // E5
+                this.playTone(783.99, 'triangle', 0.5, 450);  // G5
+            },
+            battleSound() {
+                // Low rumbling drums tone
+                this.playTone(110, 'sawtooth', 0.2, 0);
+                this.playTone(130, 'square', 0.2, 100);
+                this.playTone(90, 'sawtooth', 0.3, 200);
+            },
+            templeChime() {
+                // Heavenly temple bell ring
+                this.playTone(880.00, 'sine', 0.5, 0, 0.2);
+                this.playTone(1318.51, 'sine', 0.7, 150, 0.15);
+            }
+        };
+
+        const kingsData = [
+            {
+                id: "rehoboam",
+                name: "Rehoboam",
+                meaning: "First King of Separate Judah",
+                chronology: "1st King of Judah",
+                scripture: "1 Kings 12-14",
+                obeyedGod: false,
+                emoji: "👑",
+                soundAction: () => SoundFX.battleSound(),
+                svgArt: `<svg class="w-36 h-36 floating" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="80" fill="#fef3c7" />
+                    <!-- Crown -->
+                    <path d="M60 90 L80 130 L120 130 L140 90 L120 100 L100 80 L80 100 Z" fill="#d97706" />
+                    <circle cx="60" cy="88" r="6" fill="#ef4444" />
+                    <circle cx="100" cy="78" r="6" fill="#3b82f6" />
+                    <circle cx="140" cy="88" r="6" fill="#ef4444" />
+                    <!-- Broken Shield -->
+                    <path d="M100 120 L130 130 L120 170 L100 185 L80 170 L70 130 Z" fill="#dc2626" />
+                    <path d="M100 120 L105 183" stroke="#fef3c7" stroke-width="4" />
+                </svg>`,
+                summary: [
+                    "Son of King Solomon.",
+                    "Disobeyed God and listened to bad advice from young friends.",
+                    "The nation divided into two kingdoms during his reign."
+                ],
+                text: [
+                    "Rehoboam was the son of wise King Solomon. When he became king, the people asked him to treat them kindly and lower their heavy taxes.",
+                    "The older, wise counselors told Rehoboam to be gentle and serve the people. But Rehoboam ignored them! Instead, he listened to his young friends, who told him to be tough and mean.",
+                    "Because Rehoboam treated the people harshly and stopped obeying God's laws, 10 tribes broke away to form the northern kingdom of Israel. Rehoboam was left ruling only the southern kingdom of Judah."
+                ],
+                quiz: {
+                    question: "Whose advice did King Rehoboam foolishly follow?",
+                    options: [
+                        "The older, wise advisers",
+                        "His young friends who told him to be harsh",
+                        "The prophets of God"
+                    ],
+                    correctIndex: 1
+                }
+            },
+            {
+                id: "asa",
+                name: "Asa",
+                meaning: "A King Who Trusted God Early On",
+                chronology: "3rd King of Judah",
+                scripture: "1 Kings 15 • 2 Chronicles 14-16",
+                obeyedGod: true,
+                emoji: "🛡️",
+                soundAction: () => SoundFX.templeChime(),
+                svgArt: `<svg class="w-36 h-36 floating" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="80" fill="#ecfdf5" />
+                    <path d="M100 40 L130 80 L170 80 L140 110 L155 150 L100 125 L45 150 L60 110 L30 80 L70 80 Z" fill="#10b981" opacity="0.2" />
+                    <path d="M70 70 L100 40 L130 70 L130 120 L100 140 L70 120 Z" fill="#059669" />
+                    <path d="M100 55 L100 125 M80 85 L120 85" stroke="#ffffff" stroke-width="6" stroke-linecap="round" />
+                </svg>`,
+                summary: [
+                    "Did what was right in the eyes of God.",
+                    "Cleaned out false idols from the land of Judah.",
+                    "Prayed and trusted God to defeat a huge army."
+                ],
+                text: [
+                    "King Asa loved God with a sincere heart! When he became king, he noticed that many people in Judah were worshipping fake wooden and stone idols.",
+                    "Asa boldly destroyed all the false altars and commanded everyone in Judah to seek the Lord and obey God's laws again.",
+                    "When a gigantic army came to attack Judah, King Asa prayed: 'Help us, O Lord our God, for we rely on You!' God heard Asa's prayer and gave Judah a wonderful victory."
+                ],
+                quiz: {
+                    question: "What important thing did King Asa do to help Judah obey God?",
+                    options: [
+                        "He built bigger palaces for himself",
+                        "He tore down false idols and worship places",
+                        "He invited enemy kings to rule with him"
+                    ],
+                    correctIndex: 1
+                }
+            },
+            {
+                id: "jehoshaphat",
+                name: "Jehoshaphat",
+                meaning: "The King Who Sent Singers to Battle",
+                chronology: "4th King of Judah",
+                scripture: "2 Chronicles 17-20",
+                obeyedGod: true,
+                emoji: "🎵",
+                soundAction: () => SoundFX.royalTrumpet(),
+                svgArt: `<svg class="w-36 h-36 floating" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="80" fill="#f0f9ff" />
+                    <path d="M60 80 Q100 40 140 80 L120 140 L80 140 Z" fill="#0284c7" />
+                    <path d="M70 130 C70 130, 90 90, 100 90 C110 90, 130 130, 130 130" stroke="#f59e0b" stroke-width="6" />
+                    <circle cx="100" cy="75" r="12" fill="#fbbf24" />
+                </svg>`,
+                summary: [
+                    "Followed God's ways and sent teachers to teach God's Word.",
+                    "Faced three enemy armies at once.",
+                    "Put worship singers at the front of his army, and God won the battle!"
+                ],
+                text: [
+                    "King Jehoshaphat was Asa's son, and he also loved God. He sent leaders and priests all over Judah with the Book of God's Law so everyone could learn how to live right.",
+                    "One day, three large enemy armies joined together to attack Judah. Jehoshaphat was scared, but he called all the men, women, and children to pray and fast together.",
+                    "God told them, 'Do not be afraid, for the battle is not yours, but God's!' Jehoshaphat put praise singers in front of his soldiers. As they sang praises to God, the enemy armies got confused and defeated themselves!"
+                ],
+                quiz: {
+                    question: "Who did King Jehoshaphat put at the front of his army into battle?",
+                    options: [
+                        "Heavy archers with bows",
+                        "Singers praising and thanking God",
+                        "Chariots with iron wheels"
+                    ],
+                    correctIndex: 1
+                }
+            },
+            {
+                id: "athaliah",
+                name: "Athaliah (Queen)",
+                meaning: "The Wicked Queen of Judah",
+                chronology: "Ruler after Ahaziah",
+                scripture: "2 Kings 11 • 2 Chronicles 22-23",
+                obeyedGod: false,
+                emoji: "⚡",
+                soundAction: () => SoundFX.battleSound(),
+                svgArt: `<svg class="w-36 h-36 floating" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="80" fill="#fff1f2" />
+                    <path d="M50 130 L100 50 L150 130 Z" fill="#be123c" />
+                    <path d="M80 80 L100 110 L120 80" stroke="#fecdd3" stroke-width="5" stroke-linecap="round" />
+                    <circle cx="100" cy="140" r="15" fill="#881337" />
+                </svg>`,
+                summary: [
+                    "A very wicked queen who did NOT obey God.",
+                    "Tried to destroy the entire royal family of King David.",
+                    "Baby Joash was hidden from her in the temple for 6 years."
+                ],
+                text: [
+                    "Queen Athaliah was the daughter of wicked King Ahab and Jezebel. Unlike the good kings, she hated God and worshipped false idols like Baal.",
+                    "When her son died, Athaliah wanted all the power for herself. She tried to eliminate everyone in the royal family line of King David so no one else could be king!",
+                    "However, a brave aunt named Jehosheba secretly hid baby Joash in God's temple. Athaliah ruled selfishly for six years until Joash was safely crowned king."
+                ],
+                quiz: {
+                    question: "Where was baby prince Joash hidden from wicked Athaliah?",
+                    options: [
+                        "In a secret cave in the mountains",
+                        "Inside God's temple with priests",
+                        "In the king's palace basement"
+                    ],
+                    correctIndex: 1
+                }
+            },
+            {
+                id: "joash",
+                name: "Joash",
+                meaning: "The Boy King Who Repaired the Temple",
+                chronology: "8th Ruler of Judah",
+                scripture: "2 Kings 12 • 2 Chronicles 24",
+                obeyedGod: true,
+                emoji: "🛠️",
+                soundAction: () => SoundFX.templeChime(),
+                svgArt: `<svg class="w-36 h-36 floating" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="80" fill="#fefce8" />
+                    <!-- Temple Pillars -->
+                    <rect x="60" y="80" width="15" height="60" fill="#eab308" />
+                    <rect x="125" y="80" width="15" height="60" fill="#eab308" />
+                    <path d="M50 80 L100 50 L150 80 Z" fill="#ca8a04" />
+                    <!-- Chest -->
+                    <rect x="85" y="110" width="30" height="25" rx="3" fill="#854d0e" />
+                    <circle cx="100" cy="122" r="3" fill="#fef08a" />
+                </svg>`,
+                summary: [
+                    "Became king when he was only 7 years old!",
+                    "Obeyed God as long as high priest Jehoiada guided him.",
+                    "Collected money to fix and rebuild God's temple."
+                ],
+                text: [
+                    "Joash was only 7 years old when he became king of Judah! Because he was so young, a wise priest named Jehoiada helped guide him in doing what was right.",
+                    "Joash noticed that God's temple was damaged and needed repairs. He placed a special wooden chest at the temple gate so people could donate silver coins cheerfully.",
+                    "Workers used the money to fix the stone walls, repair doors, and make golden vessels for worship. Joash honored God as long as he listened to Godly advice."
+                ],
+                quiz: {
+                    question: "How old was Joash when he first became king?",
+                    options: [
+                        "7 years old",
+                        "18 years old",
+                        "25 years old"
+                    ],
+                    correctIndex: 0
+                }
+            },
+            {
+                id: "hezekiah",
+                name: "Hezekiah",
+                meaning: "The King Who Prayed and Was Healed",
+                chronology: "13th King of Judah",
+                scripture: "2 Kings 18-20 • 2 Chronicles 29-32",
+                obeyedGod: true,
+                emoji: "📜",
+                soundAction: () => SoundFX.templeChime(),
+                svgArt: `<svg class="w-36 h-36 floating" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="80" fill="#f0fdf4" />
+                    <path d="M70 60 L130 60 L140 140 L60 140 Z" fill="#bbf7d0" />
+                    <path d="M80 80 L120 80 M80 100 L120 100 M80 120 L110 120" stroke="#166534" stroke-width="4" stroke-linecap="round" />
+                    <circle cx="140" cy="60" r="12" fill="#22c55e" />
+                </svg>`,
+                summary: [
+                    "Trusted God more than almost any other king of Judah.",
+                    "Prayed when a huge Assyrian army threatened Jerusalem.",
+                    "God added 15 more years to his life after he prayed during sickness."
+                ],
+                text: [
+                    "King Hezekiah trusted the Lord completely. He reopened God's temple, brought back the Passover celebration, and smashed idol monuments.",
+                    "When the scary army of Assyria surrounded Jerusalem, their leader sent a letter mocking God. Hezekiah took the letter, laid it out in the temple, and prayed for God's help. God sent an angel to save Jerusalem!",
+                    "Later, Hezekiah became very sick. He wept and prayed to God. God heard his prayer, healed him, and added 15 whole years to his life!"
+                ],
+                quiz: {
+                    question: "What did Hezekiah do when he received a threatening letter from the enemy?",
+                    options: [
+                        "He surrendered immediately",
+                        "He laid it out in God's temple and prayed",
+                        "He burned the letter without reading it"
+                    ],
+                    correctIndex: 1
+                }
+            },
+            {
+                id: "manasseh",
+                name: "Manasseh",
+                meaning: "The King Who Repented in Trouble",
+                chronology: "14th King of Judah",
+                scripture: "2 Kings 21 • 2 Chronicles 33",
+                obeyedGod: false,
+                emoji: "⛓️",
+                soundAction: () => SoundFX.battleSound(),
+                svgArt: `<svg class="w-36 h-36 floating" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="80" fill="#faf5ff" />
+                    <rect x="70" y="70" width="60" height="60" rx="8" fill="#6b21a8" />
+                    <path d="M50 110 L150 110 M100 60 L100 160" stroke="#a855f7" stroke-width="6" />
+                </svg>`,
+                summary: [
+                    "Ruled for 55 years (the longest reign of any Judahite king).",
+                    "Was very disobedient for most of his life.",
+                    "Humbled himself, prayed in prison, and God forgave him!"
+                ],
+                text: [
+                    "Manasseh was Hezekiah's son, but at first, he was very disobedient. He built fake idol altars right inside God's holy temple and led the people into doing terrible things.",
+                    "Because of his bad choices, the King of Assyria captured Manasseh, put hooks in him, and carried him away in chains to Babylon.",
+                    "In deep trouble, Manasseh realized his sin. He humbled himself greatly and prayed to God for mercy. God forgave him and restored him back to his throne, where Manasseh spent his remaining days cleaning up his past mistakes!"
+                ],
+                quiz: {
+                    question: "What lesson do we learn from Manasseh's life?",
+                    options: [
+                        "God never listens when someone makes mistakes",
+                        "God is merciful when we truly humble ourselves and ask forgiveness",
+                        "Being bad makes you a stronger ruler"
+                    ],
+                    correctIndex: 1
+                }
+            },
+            {
+                id: "josiah",
+                name: "Josiah",
+                meaning: "The King Who Found the Lost Law",
+                chronology: "16th King of Judah",
+                scripture: "2 Kings 22-23 • 2 Chronicles 34-35",
+                obeyedGod: true,
+                emoji: "📖",
+                soundAction: () => SoundFX.templeChime(),
+                svgArt: `<svg class="w-36 h-36 floating" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="80" fill="#fef3c7" />
+                    <!-- Scroll -->
+                    <path d="M50 70 C50 60 65 60 70 70 L70 130 C65 140 50 140 50 130 Z" fill="#d97706" />
+                    <path d="M150 70 C150 60 135 60 130 70 L130 130 C135 140 150 140 150 130 Z" fill="#d97706" />
+                    <rect x="65" y="65" width="70" height="70" fill="#fef08a" />
+                    <path d="M75 80 L125 80 M75 95 L125 95 M75 110 L110 110" stroke="#b45309" stroke-width="4" stroke-linecap="round" />
+                </svg>`,
+                summary: [
+                    "Became king at 8 years old and loved God with all his heart.",
+                    "Found the lost Book of the Law inside the temple.",
+                    "Read God's word aloud to all the people and made a covenant to follow it."
+                ],
+                text: [
+                    "Josiah became king when he was 8 years old. Scripture says there was no king like him who turned to the Lord with all his heart, soul, and strength!",
+                    "While workers were cleaning and repairing the temple, Hilkiah the priest found a forgotten scroll: God's Book of the Law! When Josiah heard God's words read to him, he tore his robes in sorrow because the people had forgotten God.",
+                    "Josiah gathered all the citizens of Judah—from young to old—and read the entire Bible scroll to them. Together, they promised to obey God with all their hearts."
+                ],
+                quiz: {
+                    question: "What important treasure was found in the temple during Josiah's reign?",
+                    options: [
+                        "A hidden chest of ancient gold coins",
+                        "The forgotten Book of God's Law (Scripture)",
+                        "An ancient king's lost sword"
+                    ],
+                    correctIndex: 1
+                }
+            }
+        ];
+
+        const app = {
+            activeFilter: 'all',
+            currentKingId: null,
+            score: parseInt(localStorage.getItem('judah_score') || '0'),
+            unlockedCrowns: JSON.parse(localStorage.getItem('judah_crowns') || '[]'),
+            isSpeaking: false,
+
+            init() {
+                this.updateScoreboard();
+                this.renderKingsGrid();
+                this.renderBadgeGrid();
+            },
+
+            updateScoreboard() {
+                document.getElementById('stars-display').innerText = this.score;
+                document.getElementById('crown-display').innerText = `${this.unlockedCrowns.length} Crowns`;
+                document.getElementById('gallery-count').innerText = `${this.unlockedCrowns.length} / ${kingsData.length} Kings Mastered`;
+                
+                localStorage.setItem('judah_score', this.score);
+                localStorage.setItem('judah_crowns', JSON.stringify(this.unlockedCrowns));
+            },
+
+            addStars(amt) {
+                this.score += amt;
+                this.updateScoreboard();
+            },
+
+            unlockCrown(kingId) {
+                if (!this.unlockedCrowns.includes(kingId)) {
+                    this.unlockedCrowns.push(kingId);
+                    this.updateScoreboard();
+                    this.renderKingsGrid();
+                    this.renderBadgeGrid();
+                }
+            },
+
+            setFilter(filterType) {
+                SoundFX.click();
+                this.activeFilter = filterType;
+
+                const btnAll = document.getElementById('filter-all');
+                const btnGood = document.getElementById('filter-good');
+                const btnBad = document.getElementById('filter-bad');
+
+                // Reset styles
+                [btnAll, btnGood, btnBad].forEach(btn => {
+                    btn.className = "flex-1 sm:flex-none px-4 py-2 rounded-xl font-kids text-sm transition-all border-2 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100";
+                });
+
+                if (filterType === 'all') {
+                    btnAll.className = "flex-1 sm:flex-none px-4 py-2 rounded-xl font-kids text-sm transition-all border-2 bg-amber-500 text-white border-amber-600 shadow";
+                } else if (filterType === 'good') {
+                    btnGood.className = "flex-1 sm:flex-none px-4 py-2 rounded-xl font-kids text-sm transition-all border-2 bg-emerald-500 text-white border-emerald-600 shadow";
+                } else if (filterType === 'bad') {
+                    btnBad.className = "flex-1 sm:flex-none px-4 py-2 rounded-xl font-kids text-sm transition-all border-2 bg-rose-500 text-white border-rose-600 shadow";
+                }
+
+                this.renderKingsGrid();
+            },
+
+            scrollToTimeline() {
+                SoundFX.click();
+                document.getElementById('timeline-anchor').scrollIntoView({ behavior: 'smooth' });
+            },
+
+            showHome() {
+                SoundFX.click();
+                this.stopSpeech();
+                document.getElementById('view-story').classList.add('hidden');
+                document.getElementById('view-home').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+
+            openRandomKing() {
+                SoundFX.click();
+                const randomIndex = Math.floor(Math.random() * kingsData.length);
+                this.openKing(kingsData[randomIndex].id);
+            },
+
+            openKing(kingId) {
+                SoundFX.click();
+                this.stopSpeech();
+                this.currentKingId = kingId;
+                const king = kingsData.find(k => k.id === kingId);
+                if (!king) return;
+
+                document.getElementById('king-title').innerText = king.name;
+                document.getElementById('king-meaning').innerText = `"${king.meaning}"`;
+                document.getElementById('king-chronology').innerText = king.chronology;
+                document.getElementById('king-scripture').innerText = king.scripture;
+                document.getElementById('king-illustration').innerHTML = king.svgArt;
+
+                // Obedience Tag
+                const tagEl = document.getElementById('king-obedience-tag');
+                if (king.obeyedGod) {
+                    tagEl.className = "flex items-center gap-2 font-kids text-sm px-4 py-1.5 rounded-full border shadow-sm bg-emerald-100 text-emerald-900 border-emerald-300";
+                    tagEl.innerHTML = `<span>😇</span> <span>Obeyed God's Commandments</span>`;
+                } else {
+                    tagEl.className = "flex items-center gap-2 font-kids text-sm px-4 py-1.5 rounded-full border shadow-sm bg-rose-100 text-rose-900 border-rose-300";
+                    tagEl.innerHTML = `<span>😠</span> <span>Disobeyed God's Laws</span>`;
+                }
+
+                // Quick Summary Bullet points
+                const summaryList = document.getElementById('king-summary-list');
+                summaryList.innerHTML = king.summary.map(s => `<li>${s}</li>`).join('');
+
+                // Story Body Paragraphs
+                const bodyContainer = document.getElementById('king-body');
+                bodyContainer.innerHTML = king.text.map(p => `<p>${p}</p>`).join('');
+
+                // Quiz setup
+                this.renderQuiz(king.quiz);
+
+                // Switch views
+                document.getElementById('view-home').classList.add('hidden');
+                document.getElementById('view-story').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+
+            playKingSound() {
+                const king = kingsData.find(k => k.id === this.currentKingId);
+                if (king && king.soundAction) {
+                    king.soundAction();
+                }
+            },
+
+            renderQuiz(quiz) {
+                const qEl = document.getElementById('quiz-question');
+                const optsEl = document.getElementById('quiz-options');
+                const feedbackEl = document.getElementById('quiz-feedback');
+
+                qEl.innerText = quiz.question;
+                feedbackEl.classList.add('hidden');
+                feedbackEl.className = "mt-6 hidden p-4 rounded-2xl text-center font-kids text-lg border-2";
+
+                optsEl.innerHTML = '';
+                quiz.options.forEach((optText, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left bg-slate-800 hover:bg-indigo-950 border-2 border-indigo-700 text-white font-semibold p-4 rounded-2xl shadow-md transition-all text-base sm:text-lg flex items-center justify-between group cursor-pointer";
+                    btn.innerHTML = `<span>${optText}</span> <span class="bg-indigo-800 text-amber-300 w-8 h-8 rounded-full flex items-center justify-center font-kids group-hover:bg-amber-400 group-hover:text-amber-950 transition-colors">${String.fromCharCode(65 + idx)}</span>`;
+                    btn.onclick = () => this.handleQuizAnswer(idx, quiz.correctIndex, btn);
+                    optsEl.appendChild(btn);
+                });
+            },
+
+            handleQuizAnswer(selectedIdx, correctIdx, btnEl) {
+                const feedbackEl = document.getElementById('quiz-feedback');
+                const allOpts = document.querySelectorAll('#quiz-options button');
+                
+                allOpts.forEach(b => b.disabled = true);
+
+                if (selectedIdx === correctIdx) {
+                    SoundFX.correct();
+                    btnEl.classList.remove('bg-slate-800', 'border-indigo-700');
+                    btnEl.classList.add('bg-emerald-600', 'text-white', 'border-emerald-400');
+                    
+                    feedbackEl.innerText = "🎉 Excellent! You got it right! You earned +10 Stars and unlocked a Golden Crown!";
+                    feedbackEl.classList.remove('hidden');
+                    feedbackEl.classList.add('bg-emerald-950', 'text-emerald-200', 'border-emerald-500', 'animate-bounce');
+
+                    this.addStars(10);
+                    this.unlockCrown(this.currentKingId);
+                } else {
+                    SoundFX.wrong();
+                    btnEl.classList.remove('bg-slate-800', 'border-indigo-700');
+                    btnEl.classList.add('bg-rose-600', 'text-white', 'border-rose-400');
+                    
+                    allOpts[correctIdx].classList.remove('bg-slate-800', 'border-indigo-700');
+                    allOpts[correctIdx].classList.add('bg-emerald-600', 'text-white', 'border-emerald-400');
+
+                    feedbackEl.innerText = "❌ Not quite! Read the king's story again above to discover the right answer!";
+                    feedbackEl.classList.remove('hidden');
+                    feedbackEl.classList.add('bg-rose-950', 'text-rose-200', 'border-rose-500');
+                }
+            },
+
+            renderKingsGrid() {
+                const grid = document.getElementById('kings-grid');
+                let filtered = kingsData;
+
+                if (this.activeFilter === 'good') {
+                    filtered = kingsData.filter(k => k.obeyedGod);
+                } else if (this.activeFilter === 'bad') {
+                    filtered = kingsData.filter(k => !k.obeyedGod);
+                }
+
+                grid.innerHTML = filtered.map(king => {
+                    const isMastered = this.unlockedCrowns.includes(king.id);
+                    return `
+                        <div onclick="app.openKing('${king.id}')" class="king-card bg-white rounded-3xl p-5 shadow-md border-4 ${king.obeyedGod ? 'border-emerald-200 hover:border-emerald-400' : 'border-rose-200 hover:border-rose-400'} cursor-pointer flex flex-col justify-between relative overflow-hidden">
+                            <div>
+                                <div class="flex justify-between items-start mb-3">
+                                    <span class="text-xs font-bold px-2.5 py-1 rounded-full ${king.obeyedGod ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                        ${king.obeyedGod ? '😇 Obeyed God' : '😠 Disobeyed God'}
+                                    </span>
+                                    <span class="text-3xl">${king.emoji}</span>
+                                </div>
+                                <h4 class="font-kids text-2xl text-amber-950 mb-1">${king.name}</h4>
+                                <p class="text-xs text-amber-700 font-bold mb-3">${king.chronology}</p>
+                                <p class="text-slate-600 text-sm line-clamp-2 font-medium">${king.summary[0]}</p>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600">
+                                <span>Read Story ➔</span>
+                                ${isMastered ? '<span class="text-amber-500 text-lg" title="Crown Earned!">👑</span>' : '<span class="text-slate-300">🔒</span>'}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            renderBadgeGrid() {
+                const badgeGrid = document.getElementById('badge-grid');
+                badgeGrid.innerHTML = kingsData.map(king => {
+                    const isUnlocked = this.unlockedCrowns.includes(king.id);
+                    return `
+                        <div class="aspect-square rounded-2xl flex flex-col items-center justify-center p-2 border-2 ${isUnlocked ? 'bg-amber-100 border-amber-400 shadow-sm' : 'bg-slate-100 border-dashed border-slate-300 opacity-60'}">
+                            <span class="text-3xl mb-1">${isUnlocked ? '👑' : '🔒'}</span>
+                            <span class="text-[11px] font-kids text-center ${isUnlocked ? 'text-amber-950' : 'text-slate-400'} line-clamp-1">${king.name}</span>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            toggleSpeech() {
+                if ('speechSynthesis' in window) {
+                    if (this.isSpeaking) {
+                        this.stopSpeech();
+                    } else {
+                        const king = kingsData.find(k => k.id === this.currentKingId);
+                        if (!king) return;
+                        
+                        window.speechSynthesis.cancel();
+                        const fullText = `${king.name}. ${king.meaning}. Key summary: ${king.summary.join(". ")}. Story: ${king.text.join(" ")}`;
+                        const utterance = new SpeechSynthesisUtterance(fullText);
+                        utterance.rate = 0.92; // Slightly slower for clarity
+                        utterance.pitch = 1.05;
+
+                        utterance.onstart = () => {
+                            this.isSpeaking = true;
+                            document.getElementById('tts-label').innerText = "Stop Speech";
+                            document.getElementById('tts-btn').classList.replace('bg-indigo-600', 'bg-rose-600');
+                            document.getElementById('tts-btn').classList.replace('border-indigo-800', 'border-rose-800');
+                        };
+
+                        utterance.onend = () => {
+                            this.stopSpeech();
+                        };
+
+                        utterance.onerror = () => {
+                            this.stopSpeech();
+                        };
+
+                        window.speechSynthesis.speak(utterance);
+                    }
+                } else {
+                    console.warn("Text-to-speech is not supported in this browser environment.");
+                }
+            },
+
+            stopSpeech() {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+                this.isSpeaking = false;
+                const label = document.getElementById('tts-label');
+                const btn = document.getElementById('tts-btn');
+                if (label && btn) {
+                    label.innerText = "Read Story Aloud";
+                    btn.classList.replace('bg-rose-600', 'bg-indigo-600');
+                    btn.classList.replace('border-rose-800', 'border-indigo-800');
+                }
+            }
+        };
+
+        window.onload = () => {
+            app.init();
+        };
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                app.stopSpeech();
+            }
+        });
+    </script>
+</body>
+</html>
